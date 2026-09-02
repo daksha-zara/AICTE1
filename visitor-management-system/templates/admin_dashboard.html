@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h1>Admin Dashboard</h1>
+
+<div class="grid grid-4">
+  <div class="stat-card">
+    <div class="value">{{ stats.total_visitors }}</div>
+    <div class="label">Total Visitors</div>
+  </div>
+  <div class="stat-card" style="border-color:var(--amber);">
+    <div class="value">{{ stats.today_visitors }}</div>
+    <div class="label">Today's Visitors</div>
+  </div>
+  <div class="stat-card" style="border-color:var(--green);">
+    <div class="value">{{ stats.currently_in }}</div>
+    <div class="label">Currently Checked In</div>
+  </div>
+  <div class="stat-card" style="border-color:var(--red);">
+    <div class="value">{{ stats.pending_approval }}</div>
+    <div class="label">Pending Approval</div>
+  </div>
+</div>
+
+<div class="grid grid-2 mt-2">
+  <div class="chart-box">
+    <h3>Visitors — Last 7 Days</h3>
+    <canvas id="dailyChart" height="220"></canvas>
+  </div>
+  <div class="chart-box">
+    <h3>Visitor Status Breakdown</h3>
+    <canvas id="statusChart" height="220"></canvas>
+  </div>
+</div>
+
+<div class="grid mt-2" style="grid-template-columns:1fr;">
+  <div class="chart-box">
+    <h3>Top Hosts by Visitor Count</h3>
+    <canvas id="hostChart" height="180"></canvas>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <div class="flex-between">
+    <h2>Recent Visitors</h2>
+    <a href="{{ url_for('admin.all_visitors') }}" class="btn btn-sm btn-secondary">View All</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Host</th><th>Status</th><th>Registered</th></tr></thead>
+      <tbody>
+        {% for v in recent_visitors %}
+        <tr>
+          <td>{{ v.full_name }}</td>
+          <td>{{ v.host_name }}</td>
+          <td><span class="badge badge-{{ v.status }}">{{ v.status.replace('_',' ') }}</span></td>
+          <td>{{ v.created_at.strftime('%d %b, %I:%M %p') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+async function loadAnalytics() {
+  const res = await fetch("{{ url_for('admin.analytics_data') }}");
+  const data = await res.json();
+
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels: data.daily.labels,
+      datasets: [{ label: 'Visitors', data: data.daily.values, borderColor: '#0ea5a0', backgroundColor: 'rgba(14,165,160,.15)', fill: true, tension: .3 }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: data.status.labels.map(s => s.replace('_',' ')),
+      datasets: [{ data: data.status.values, backgroundColor: ['#f5a524','#0ea5a0','#e5484d','#22a55e','#8b98ab'] }]
+    }
+  });
+
+  new Chart(document.getElementById('hostChart'), {
+    type: 'bar',
+    data: {
+      labels: data.hosts.labels,
+      datasets: [{ label: 'Visitors', data: data.hosts.values, backgroundColor: '#16263f' }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+loadAnalytics();
+</script>
+{% endblock %}

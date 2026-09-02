@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Visitor Registration{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto;">
+
+  <!-- Visitor Tabs -->
+  <div class="visitor-tabs">
+    <a href="{{ url_for('visitor.register') }}" class="visitor-tab active">New Registration</a>
+    <a href="{{ url_for('visitor.visitor_login') }}" class="visitor-tab">Check My Pass</a>
+  </div>
+
+  <div class="card">
+    <h1>Visitor Registration</h1>
+    <p class="text-muted">Fill in your details to request a digital visitor pass. Your host will be notified instantly.</p>
+
+    <form method="POST">
+      <div class="form-group">
+        <label for="full_name">Full Name *</label>
+        <input type="text" id="full_name" name="full_name" required autofocus>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">Phone Number *</label>
+          <input type="tel" id="phone" name="phone" required pattern="[0-9+ ]{7,15}">
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="company">Company / Organisation</label>
+        <input type="text" id="company" name="company">
+      </div>
+
+      <div class="form-group">
+        <label for="host_id">Host to Meet *</label>
+        {% if hosts %}
+          <select id="host_id" name="host_id" required>
+            <option value="" disabled selected>— Select a host —</option>
+            {% for host in hosts %}
+              <option value="{{ host._id }}">{{ host.full_name }}{% if host.department %} — {{ host.department }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <div class="notice-box">
+            <span class="notice-icon">ℹ️</span>
+            <span>No hosts registered yet. Ask staff to <a href="{{ url_for('auth.register') }}">create a host account</a> first.</span>
+          </div>
+          <input type="hidden" name="host_id" value="">
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="purpose">Purpose of Visit</label>
+        <textarea id="purpose" name="purpose" rows="3" placeholder="e.g. Meeting, Interview, Delivery"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-block">Submit &amp; Get Digital Pass</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

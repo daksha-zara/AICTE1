@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Check My Pass · Visitor{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto;">
+
+  <!-- Visitor Tabs -->
+  <div class="visitor-tabs">
+    <a href="{{ url_for('visitor.register') }}" class="visitor-tab">New Registration</a>
+    <a href="{{ url_for('visitor.visitor_login') }}" class="visitor-tab active">Check My Pass</a>
+  </div>
+
+  <div class="card">
+    <h1>Check Your Pass</h1>
+    <p class="text-muted">Already registered? Enter your Pass ID or phone number to view your digital pass and status.</p>
+
+    <form method="POST" id="visitorLoginForm">
+      <div class="form-group">
+        <label for="lookup_type">Search By *</label>
+        <select id="lookup_type" name="lookup_type" required onchange="toggleLookup(this.value)">
+          <option value="" disabled selected>— Choose search method —</option>
+          <option value="pass_id">Pass ID</option>
+          <option value="phone">Phone Number</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="pass_id_group" style="display:none;">
+        <label for="pass_id">Pass ID</label>
+        <input type="text" id="pass_id" name="pass_id" placeholder="e.g. 7EA75D619C32"
+               style="text-transform:uppercase;" maxlength="12">
+        <small class="form-hint">Your Pass ID was shown after registration.</small>
+      </div>
+
+      <div class="form-group" id="phone_group" style="display:none;">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" placeholder="e.g. 9876543210">
+        <small class="form-hint">The phone number you used during registration.</small>
+      </div>
+
+      <button type="submit" class="btn btn-block">🔍 Find My Pass</button>
+    </form>
+
+    <p style="text-align:center;margin-top:1.2rem;font-size:.88rem;color:var(--text-muted);">
+      First time visiting? <a href="{{ url_for('visitor.register') }}">Register here →</a>
+    </p>
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+function toggleLookup(val) {
+  document.getElementById('pass_id_group').style.display = (val === 'pass_id') ? 'block' : 'none';
+  document.getElementById('phone_group').style.display   = (val === 'phone')   ? 'block' : 'none';
+
+  // make required as needed
+  document.getElementById('pass_id').required = (val === 'pass_id');
+  document.getElementById('phone').required   = (val === 'phone');
+}
+
+// auto-uppercase pass ID as user types
+document.getElementById('pass_id').addEventListener('input', function() {
+  this.value = this.value.toUpperCase();
+});
+</script>
+{% endblock %}
+{% endblock %}

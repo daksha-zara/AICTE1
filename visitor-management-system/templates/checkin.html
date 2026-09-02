@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Gate Check-In / Check-Out{% endblock %}
+{% block content %}
+<h1>Gate Check-In / Check-Out</h1>
+<p class="text-muted">Scan a visitor's QR pass, or type their Pass ID manually. Scanning automatically checks a visitor in on their first scan, and out on their second.</p>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>📷 Camera Scan</h2>
+    <div id="reader"></div>
+    <p class="text-muted mt-1" style="font-size:.8rem;">Allow camera access when prompted. Works best in good lighting.</p>
+  </div>
+
+  <div class="card">
+    <h2>⌨️ Manual Entry</h2>
+    <form id="manualForm">
+      <div class="form-group">
+        <label for="manualPassId">Pass ID</label>
+        <input type="text" id="manualPassId" placeholder="e.g. A1B2C3D4E5F6" style="text-transform:uppercase;">
+      </div>
+      <button type="submit" class="btn btn-block">Submit</button>
+    </form>
+
+    <div id="scanResult"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script>
+const resultBox = document.getElementById("scanResult");
+
+async function submitPassId(passId) {
+  resultBox.innerHTML = "";
+  try {
+    const res = await fetch("{{ url_for('checkin.process') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pass_id: passId }),
+    });
+    const data = await res.json();
+    const div = document.createElement("div");
+    div.className = "scan-result " + (data.ok ? "ok" : "error");
+    div.textContent = data.message;
+    resultBox.appendChild(div);
+  } catch (e) {
+    const div = document.createElement("div");
+    div.className = "scan-result error";
+    div.textContent = "Network error. Please try again.";
+    resultBox.appendChild(div);
+  }
+}
+
+document.getElementById("manualForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const val = document.getElementById("manualPassId").value.trim();
+  if (val) submitPassId(val);
+});
+
+// Camera-based QR scanning
+let lastScanTime = 0;
+function onScanSuccess(decodedText) {
+  const now = Date.now();
+  if (now - lastScanTime < 3000) return; // debounce repeated frames
+  lastScanTime = now;
+  submitPassId(decodedText.trim());
+}
+
+try {
+  const scanner = new Html5Qrcode("reader");
+  Html5Qrcode.getCameras().then((cameras) => {
+    if (cameras && cameras.length) {
+      scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 220 },
+        onScanSuccess
+      );
+    } else {
+      document.getElementById("reader").innerHTML = "<p class='text-muted'>No camera found. Use manual entry.</p>";
+    }
+  }).catch(() => {
+    document.getElementById("reader").innerHTML = "<p class='text-muted'>Camera unavailable. Use manual entry.</p>";
+  });
+} catch (e) {
+  document.getElementById("reader").innerHTML = "<p class='text-muted'>Camera unavailable. Use manual entry.</p>";
+}
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}All Visitors{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1>All Visitors</h1>
+  <form method="GET">
+    <select name="status" onchange="this.form.submit()">
+      <option value="all" {{ 'selected' if status_filter=='all' }}>All Statuses</option>
+      <option value="pending" {{ 'selected' if status_filter=='pending' }}>Pending</option>
+      <option value="approved" {{ 'selected' if status_filter=='approved' }}>Approved</option>
+      <option value="rejected" {{ 'selected' if status_filter=='rejected' }}>Rejected</option>
+      <option value="checked_in" {{ 'selected' if status_filter=='checked_in' }}>Checked In</option>
+      <option value="checked_out" {{ 'selected' if status_filter=='checked_out' }}>Checked Out</option>
+    </select>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Pass ID</th><th>Name</th><th>Company</th><th>Host</th><th>Status</th><th>Check-In</th><th>Check-Out</th><th>Registered</th></tr>
+      </thead>
+      <tbody>
+        {% for v in visitors %}
+        <tr>
+          <td>{{ v.pass_id }}</td>
+          <td>{{ v.full_name }}</td>
+          <td>{{ v.company or '—' }}</td>
+          <td>{{ v.host_name }}</td>
+          <td><span class="badge badge-{{ v.status }}">{{ v.status.replace('_',' ') }}</span></td>
+          <td>{{ v.check_in_time.strftime('%d %b %I:%M %p') if v.check_in_time else '—' }}</td>
+          <td>{{ v.check_out_time.strftime('%d %b %I:%M %p') if v.check_out_time else '—' }}</td>
+          <td>{{ v.created_at.strftime('%d %b %I:%M %p') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-muted text-center">No visitors found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Your Digital Pass{% endblock %}
+{% block content %}
+<div class="card pass-card">
+  <h2>Digital Visitor Pass</h2>
+  <img class="qr" src="{{ url_for('static', filename=visitor.qr_path) }}" alt="QR code for pass {{ visitor.pass_id }}">
+  <div class="pass-id">{{ visitor.pass_id }}</div>
+  <p class="text-muted">Show this QR code at the security gate</p>
+
+  <div style="text-align:left;margin-top:1rem;">
+    <p><strong>Name:</strong> {{ visitor.full_name }}</p>
+    <p><strong>Meeting:</strong> {{ visitor.host_name }}</p>
+    {% if visitor.company %}<p><strong>Company:</strong> {{ visitor.company }}</p>{% endif %}
+    {% if visitor.purpose %}<p><strong>Purpose:</strong> {{ visitor.purpose }}</p>{% endif %}
+    <p><strong>Status:</strong> <span class="badge badge-{{ visitor.status }}" id="statusBadge">{{ visitor.status.replace('_', ' ') }}</span></p>
+  </div>
+
+  <p class="text-muted mt-1" style="font-size:.8rem;">
+    This status updates automatically once your host approves your visit.
+  </p>
+  <a href="{{ url_for('visitor.register') }}" class="btn btn-secondary mt-1">Register Another Visitor</a>
+</div>
+
+<script>
+  const badge = document.getElementById("statusBadge");
+  const passId = "{{ visitor.pass_id }}";
+
+  async function pollStatus() {
+    try {
+      const res = await fetch(`/visitor/pass/${passId}/status`);
+      const data = await res.json();
+      if (data.status) {
+        badge.textContent = data.status.replace("_", " ");
+        badge.className = "badge badge-" + data.status;
+      }
+    } catch (e) { /* ignore transient errors */ }
+  }
+  setInterval(pollStatus, 4000);
+</script>
+{% endblock %}

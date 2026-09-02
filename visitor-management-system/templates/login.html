@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Staff Login · Smart Visitor Management{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+
+    <!-- Auth Tabs -->
+    <div class="auth-tabs">
+      <a href="{{ url_for('auth.login') }}" class="auth-tab active">Login</a>
+      <a href="{{ url_for('auth.register') }}" class="auth-tab">Register</a>
+    </div>
+
+    <h1 class="auth-title">Staff Login</h1>
+    <p class="text-muted">Admin, Host and Security accounts sign in here.</p>
+
+    {% if error %}
+      <div class="flash flash-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-icon-wrap">
+          <input type="password" id="password" name="password" required autocomplete="current-password">
+          <button type="button" class="toggle-pwd" onclick="togglePassword('password', this)" aria-label="Show/hide password">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-block">Log In</button>
+    </form>
+
+    <p class="auth-footer-link">
+      Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a>
+    </p>
+    <p class="auth-footer-link">
+      <a href="{{ url_for('visitor.register') }}">← Back to visitor registration</a>
+    </p>
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+function togglePassword(fieldId, btn) {
+  const field = document.getElementById(fieldId);
+  if (field.type === 'password') {
+    field.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    field.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+</script>
+{% endblock %}
+{% endblock %}

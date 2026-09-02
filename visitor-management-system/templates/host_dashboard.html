@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Host Dashboard{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1>Welcome, {{ current_full_name }}</h1>
+</div>
+
+<div class="card">
+  <h2>Pending Approvals ({{ pending|length }})</h2>
+  {% if pending %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Company</th><th>Purpose</th><th>Phone</th><th>Requested</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for v in pending %}
+        <tr>
+          <td>{{ v.full_name }}</td>
+          <td>{{ v.company or '—' }}</td>
+          <td>{{ v.purpose or '—' }}</td>
+          <td>{{ v.phone }}</td>
+          <td>{{ v.created_at.strftime('%d %b, %I:%M %p') }}</td>
+          <td class="flex">
+            <form method="POST" action="{{ url_for('host.approve', visitor_id=v._id) }}">
+              <button class="btn btn-sm">Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('host.reject', visitor_id=v._id) }}">
+              <button class="btn btn-sm btn-danger">Reject</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted">No pending visitor requests right now.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Today's Visitors ({{ todays_visitors|length }})</h2>
+  {% if todays_visitors %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Status</th><th>Check-In</th><th>Check-Out</th></tr></thead>
+      <tbody>
+        {% for v in todays_visitors %}
+        <tr>
+          <td>{{ v.full_name }}</td>
+          <td><span class="badge badge-{{ v.status }}">{{ v.status.replace('_',' ') }}</span></td>
+          <td>{{ v.check_in_time.strftime('%I:%M %p') if v.check_in_time else '—' }}</td>
+          <td>{{ v.check_out_time.strftime('%I:%M %p') if v.check_out_time else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted">No visitors yet today.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Recent Notifications</h2>
+  {% if notifications %}
+    {% for n in notifications %}
+      <p style="border-bottom:1px solid var(--border);padding:.5rem 0;">
+        {{ n.message }} <span class="text-muted" style="font-size:.8rem;">— {{ n.created_at.strftime('%d %b, %I:%M %p') }}</span>
+      </p>
+    {% endfor %}
+  {% else %}
+  <p class="text-muted">No notifications yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

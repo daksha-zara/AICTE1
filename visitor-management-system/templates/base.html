@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Smart Visitor Management{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ url_for('index') }}">
+      <span class="brand-mark">VM</span>
+      <span class="brand-text">Smart Visitor<br>Management</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav" id="mainNav">
+      {% if logged_in %}
+        {% if current_role == 'admin' %}
+          <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('admin.all_visitors') }}">Visitors</a>
+          <a href="{{ url_for('auth.manage_users') }}">Users</a>
+          <a href="{{ url_for('checkin.scan_page') }}">Gate Scan</a>
+        {% elif current_role == 'host' %}
+          <a href="{{ url_for('host.dashboard') }}">My Dashboard</a>
+        {% elif current_role == 'security' %}
+          <a href="{{ url_for('checkin.scan_page') }}">Gate Scan</a>
+        {% endif %}
+        <a href="{{ url_for('visitor.register') }}">New Visitor</a>
+        <span class="nav-user">👤 {{ current_full_name }} <em>({{ current_role }})</em></span>
+        <a href="{{ url_for('auth.logout') }}" class="btn-link">Logout</a>
+      {% else %}
+        <a href="{{ url_for('visitor.register') }}">Visitor Registration</a>
+        <a href="{{ url_for('auth.login') }}" class="btn-link">Staff Login</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="page-wrap">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <p>AI-Powered Smart Visitor Management System &middot; Built with Flask &amp; MongoDB</p>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
