@@ -2,7 +2,7 @@ import datetime
 from flask import Flask, render_template, redirect, url_for, session
 
 from config import Config
-from db import init_db
+from db import init_db, seed_admin_if_needed
 from auth_utils import login_required
 
 from routes.auth import auth_bp
@@ -17,13 +17,25 @@ def create_app():
     app.config.from_object(Config)
     app.permanent_session_lifetime = datetime.timedelta(hours=8)
 
-    init_db(app)
+    init_db(app)  # stores config only — does NOT connect yet
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(visitor_bp)
     app.register_blueprint(host_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(checkin_bp)
+
+    # Seed admin on the very first request (serverless-safe)
+    _first_request_done = {"done": False}
+
+    @app.before_request
+    def seed_on_first_request():
+        if not _first_request_done["done"]:
+            _first_request_done["done"] = True
+            try:
+                seed_admin_if_needed()
+            except Exception as e:
+                app.logger.warning("Could not seed admin: %s", e)
 
     @app.route("/")
     def index():
