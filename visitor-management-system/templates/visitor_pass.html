@@ -3,7 +3,7 @@
 {% block content %}
 <div class="card pass-card">
   <h2>Digital Visitor Pass</h2>
-  <img class="qr" src="{{ url_for('static', filename=visitor.qr_path) }}" alt="QR code for pass {{ visitor.pass_id }}">
+  <img class="qr" src="{{ url_for('visitor.qr_image', pass_id=visitor.pass_id) }}" alt="QR code for pass {{ visitor.pass_id }}">
   <div class="pass-id">{{ visitor.pass_id }}</div>
   <p class="text-muted">Show this QR code at the security gate</p>
 

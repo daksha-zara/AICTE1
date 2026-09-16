@@ -79,16 +79,33 @@ def register():
 
 
 def _generate_qr(pass_id):
-    """Generate and save a QR code image encoding the visitor's pass_id."""
-    folder = current_app.config["QR_FOLDER"]
-    os.makedirs(folder, exist_ok=True)
-    filename = f"{pass_id}.png"
-    filepath = os.path.join(folder, filename)
+    """Generate and save a QR code image encoding the visitor's pass_id.
+    Safely ignores filesystem write errors in serverless environments.
+    """
+    try:
+        folder = current_app.config.get("QR_FOLDER")
+        if folder:
+            os.makedirs(folder, exist_ok=True)
+            filename = f"{pass_id}.png"
+            filepath = os.path.join(folder, filename)
+            img = qrcode.make(pass_id)
+            img.save(filepath)
+            return f"qrcodes/{filename}"
+    except Exception:
+        pass
+    return f"qr/{pass_id}"
 
+
+@visitor_bp.route("/visitor/qr/<pass_id>")
+def qr_image(pass_id):
+    """Generates the QR code on the fly in memory (100% serverless safe)."""
+    import io
+    from flask import send_file
     img = qrcode.make(pass_id)
-    img.save(filepath)
-
-    return f"qrcodes/{filename}"
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return send_file(buf, mimetype="image/png")
 
 
 @visitor_bp.route("/visitor/pass/<pass_id>")

@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import datetime
 from flask import Flask, render_template, redirect, url_for, session
 

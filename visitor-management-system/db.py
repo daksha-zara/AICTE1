@@ -96,17 +96,20 @@ def seed_admin_if_needed():
 
 
 def _create_indexes():
-    db = _db
-    db.users.create_index([("username", ASCENDING)], unique=True)
-    db.users.create_index([("email", ASCENDING)], unique=True)
+    try:
+        db = _db
+        db.users.create_index([("username", ASCENDING)], unique=True)
+        db.users.create_index([("email", ASCENDING)], unique=True)
 
-    db.visitors.create_index([("pass_id", ASCENDING)], unique=True)
-    db.visitors.create_index([("status", ASCENDING)])
-    db.visitors.create_index([("host_id", ASCENDING)])
-    db.visitors.create_index([("created_at", DESCENDING)])
+        db.visitors.create_index([("pass_id", ASCENDING)], unique=True)
+        db.visitors.create_index([("status", ASCENDING)])
+        db.visitors.create_index([("host_id", ASCENDING)])
+        db.visitors.create_index([("created_at", DESCENDING)])
 
-    db.notifications.create_index([("host_id", ASCENDING), ("is_read", ASCENDING)])
-    db.notifications.create_index([("created_at", DESCENDING)])
+        db.notifications.create_index([("host_id", ASCENDING), ("is_read", ASCENDING)])
+        db.notifications.create_index([("created_at", DESCENDING)])
 
-    db.checkin_logs.create_index([("visitor_id", ASCENDING)])
-    db.checkin_logs.create_index([("timestamp", DESCENDING)])
+        db.checkin_logs.create_index([("visitor_id", ASCENDING)])
+        db.checkin_logs.create_index([("timestamp", DESCENDING)])
+    except Exception:
+        pass
