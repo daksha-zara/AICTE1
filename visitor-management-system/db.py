@@ -46,12 +46,19 @@ def _connect():
         or os.environ.get("MONGO_DB_NAME", "visitor_management")
     )
 
-    _client = MongoClient(
-        mongo_uri,
-        serverSelectionTimeoutMS=5000,   # fail fast if unreachable
-        connectTimeoutMS=5000,
-        socketTimeoutMS=10000,
-    )
+    kwargs = {
+        "serverSelectionTimeoutMS": 5000,
+        "connectTimeoutMS": 5000,
+        "socketTimeoutMS": 10000,
+    }
+    try:
+        import certifi
+        if "mongodb+srv" in mongo_uri or "ssl=true" in mongo_uri.lower():
+            kwargs["tlsCAFile"] = certifi.where()
+    except Exception:
+        pass
+
+    _client = MongoClient(mongo_uri, **kwargs)
     _db = _client[mongo_db_name]
 
     _create_indexes()

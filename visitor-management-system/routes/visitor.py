@@ -19,8 +19,12 @@ visitor_bp = Blueprint("visitor", __name__)
 def register():
     """Public kiosk-style visitor registration form (module: Visitor
     Registration & Digital Pass Generation)."""
-    db = get_db()
-    hosts = list(db.users.find({"role": "host", "is_active": True}).sort("full_name", 1))
+    hosts = []
+    try:
+        db = get_db()
+        hosts = list(db.users.find({"role": "host", "is_active": True}).sort("full_name", 1))
+    except Exception as e:
+        flash(f"Database connection error: {e}. Please check your MONGO_URI.", "error")
 
     if request.method == "POST":
         full_name = request.form.get("full_name", "").strip()
